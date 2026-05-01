@@ -1,80 +1,57 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <ctype.h>
 
-#define MAX 100
+char stack[100];
+int top = -1;
 
-// Tree Node
-struct Node {
-    int data;
-    struct Node* left;
-    struct Node* right;
-};
-
-// Create new node
-struct Node* newNode(int data) {
-    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
-    temp->data = data;
-    temp->left = temp->right = NULL;
-    return temp;
+void push(char x) {
+    stack[++top] = x;
 }
 
-// Zigzag Traversal Function
-void zigzagTraversal(struct Node* root) {
+char pop() {
+    return stack[top--];
+}
 
-    if (root == NULL) return;
-
-    struct Node* queue[MAX];
-    int front = 0, rear = 0;
-
-    queue[rear++] = root;
-
-    int leftToRight = 1;
-
-    while (front < rear) {
-
-        int size = rear - front;
-        int arr[size];
-
-        // store current level
-        for (int i = 0; i < size; i++) {
-
-            struct Node* temp = queue[front++];
-
-            arr[i] = temp->data;
-
-            if (temp->left)
-                queue[rear++] = temp->left;
-
-            if (temp->right)
-                queue[rear++] = temp->right;
-        }
-
-        // print level
-        if (leftToRight) {
-            for (int i = 0; i < size; i++)
-                printf("%d ", arr[i]);
-        }
-        else {
-            for (int i = size - 1; i >= 0; i--)
-                printf("%d ", arr[i]);
-        }
-
-        leftToRight = !leftToRight;
-    }
+int precedence(char x) {
+    if(x == '^')
+        return 3;
+    else if(x == '*' || x == '/')
+        return 2;
+    else if(x == '+' || x == '-')
+        return 1;
+    else
+        return 0;
 }
 
 int main() {
+    char infix[100], postfix[100];
+    int i = 0, j = 0;
 
-    // Example Tree
-    struct Node* root = newNode(1);
-    root->left = newNode(2);
-    root->right = newNode(3);
-    root->left->left = newNode(4);
-    root->left->right = newNode(5);
-    root->right->left = newNode(6);
-    root->right->right = newNode(7);
+    printf("Enter infix expression: ");
+    scanf("%s", infix);
 
-    zigzagTraversal(root);
+    while(infix[i] != '\0') {
+        
+        if(isalnum(infix[i])) {
+            postfix[j++] = infix[i];
+        }
+        else {
+            while(top != -1 && precedence(stack[top]) >= precedence(infix[i])) {
+                postfix[j++] = pop();
+            }
+            push(infix[i]);
+        }
+
+        i++;
+    }
+
+    while(top != -1) {
+        postfix[j++] = pop();
+    }
+
+    postfix[j] = '\0';
+
+    printf("Postfix expression: %s", postfix);
 
     return 0;
 }
